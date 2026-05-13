@@ -76,6 +76,7 @@ baseurl=${RHEL84_COMPOSE}/BaseOS/x86_64/os/
 enabled=1
 gpgcheck=0
 sslverify=0
+priority=1
 
 [rhel84-appstream]
 name=RHEL 8.4 AppStream
@@ -83,6 +84,7 @@ baseurl=${RHEL84_COMPOSE}/AppStream/x86_64/os/
 enabled=1
 gpgcheck=0
 sslverify=0
+priority=1
 
 [rhel84-crb]
 name=RHEL 8.4 CRB
@@ -90,6 +92,7 @@ baseurl=${RHEL84_COMPOSE}/CRB/x86_64/os/
 enabled=1
 gpgcheck=0
 sslverify=0
+priority=1
 EOF"
 }
 
