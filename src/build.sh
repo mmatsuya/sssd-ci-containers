@@ -184,7 +184,13 @@ for svc in $UNAVAILABLE; do
   fi
 done
 if [ "$SKIP_SAMBA" == "true" ]; then
+  set +e
   ansible-playbook $ANSIBLE_OPTS --extra-vars '{"join_samba":false,"trust_ipa_samba":false}' ./ansible/playbook_image_service.yml
+  rc=$?
+  set -e
+  # Exit code 3 means unreachable hosts only (samba/keycloak are expected unreachable).
+  # Exit codes 1 (error) and 2 (failed tasks) are still fatal.
+  [ $rc -eq 0 ] || [ $rc -eq 3 ] || exit $rc
 else
   ansible-playbook $ANSIBLE_OPTS ./ansible/playbook_image_service.yml
 fi
