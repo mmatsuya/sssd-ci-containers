@@ -1,6 +1,6 @@
 # dns server
-FROM docker.io/alpine:latest AS dns
-RUN apk --no-cache add dnsmasq
+FROM registry.access.redhat.com/ubi8/ubi-minimal:latest AS dns
+RUN microdnf install -y dnsmasq && microdnf clean all
 ENTRYPOINT ["dnsmasq", "-k"]
 
 # vagrant with preinstalled plugins and ansible
