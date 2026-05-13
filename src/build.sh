@@ -25,6 +25,7 @@ export REGISTRY="localhost/sssd"
 export BASE_IMAGE="${BASE_IMAGE:-registry.fedoraproject.org/fedora:latest}"
 export TAG="${TAG:-latest}"
 export UNAVAILABLE="${UNAVAILABLE:-}"
+export RHEL84_COMPOSE="${RHEL84_COMPOSE:-https://download.eng.brq.redhat.com/nightly/rhel-8/updates/RHEL-8/latest-RHEL-8.4.0/compose}"
 export ANSIBLE_CONFIG=./ansible/ansible.cfg
 export ANSIBLE_OPTS=${ANSIBLE_OPTS:-}
 export ANSIBLE_DEBUG=${ANSIBLE_DEBUG:-0}
@@ -63,6 +64,35 @@ function c8s_repo {
     ${DOCKER} exec sssd-wip-base /bin/bash -c 'grep -q "CentOS Stream 8" /etc/os-release && sed -i "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-* || true'
 }
 
+function rhel84_repo {
+    # Add RHEL 8.4 compose repos when running on a RHEL 8 UBI image (no subscription)
+    if ! base_exec 'grep -q "Red Hat" /etc/os-release && grep -q VERSION_ID=\"8 /etc/os-release'; then
+        return 0
+    fi
+    base_exec "cat > /etc/yum.repos.d/rhel84-compose.repo << 'EOF'
+[rhel84-baseos]
+name=RHEL 8.4 BaseOS
+baseurl=${RHEL84_COMPOSE}/BaseOS/x86_64/os/
+enabled=1
+gpgcheck=0
+sslverify=0
+
+[rhel84-appstream]
+name=RHEL 8.4 AppStream
+baseurl=${RHEL84_COMPOSE}/AppStream/x86_64/os/
+enabled=1
+gpgcheck=0
+sslverify=0
+
+[rhel84-crb]
+name=RHEL 8.4 CRB
+baseurl=${RHEL84_COMPOSE}/CRB/x86_64/os/
+enabled=1
+gpgcheck=0
+sslverify=0
+EOF"
+}
+
 # Make sure that Ansible dependencies are installed so we can run playbooks
 function base_install_python {
   # Install python3 if not available
@@ -72,6 +102,12 @@ function base_install_python {
     else
       base_exec 'dnf install -y python3 && dnf clean all'
     fi
+  fi
+
+  # Ansible requires Python 3.7+. If the system only has Python 3.6 (e.g. RHEL 8.4),
+  # install python3.8 and make it the default python3.
+  if base_exec 'python3 --version 2>&1 | grep -qE "Python 3\.[0-6]\."'; then
+    base_exec 'dnf install -y python38 && alternatives --set python3 /usr/bin/python3.8 && dnf clean all'
   fi
 
   # Add python3-dnf5 to enable ansible to use it
@@ -101,6 +137,7 @@ function build_base_image {
   ${DOCKER} run --security-opt seccomp=unconfined --name sssd-wip-base --detach -i "$from"
   if [ $name == 'base-ground' ]; then
     c8s_repo
+    rhel84_repo
     base_install_python
   fi
   ansible-playbook $ANSIBLE_OPTS --limit "`echo $name | sed -r 's/-/_/g'`" ./ansible/playbook_image_base.yml
