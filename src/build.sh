@@ -176,14 +176,18 @@ fi
 
 # Create services
 compose up --detach
-SAMBA_OPTS=""
+SKIP_SAMBA=false
 for svc in $UNAVAILABLE; do
   if [ "$svc" == "samba" ]; then
-    SAMBA_OPTS="--extra-vars join_samba=no --extra-vars trust_ipa_samba=no"
+    SKIP_SAMBA=true
     break
   fi
 done
-ansible-playbook $ANSIBLE_OPTS $SAMBA_OPTS ./ansible/playbook_image_service.yml
+if [ "$SKIP_SAMBA" == "true" ]; then
+  ansible-playbook $ANSIBLE_OPTS --extra-vars '{"join_samba":false,"trust_ipa_samba":false}' ./ansible/playbook_image_service.yml
+else
+  ansible-playbook $ANSIBLE_OPTS ./ansible/playbook_image_service.yml
+fi
 compose stop
 build_service_image sssd-wip-client client
 build_service_image sssd-wip-ipa ipa
