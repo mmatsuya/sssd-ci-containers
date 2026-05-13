@@ -188,9 +188,9 @@ if [ "$SKIP_SAMBA" == "true" ]; then
   ansible-playbook $ANSIBLE_OPTS --extra-vars '{"join_samba":false,"trust_ipa_samba":false}' ./ansible/playbook_image_service.yml
   rc=$?
   set -e
-  # Exit code 3 means unreachable hosts only (samba/keycloak are expected unreachable).
-  # Exit codes 1 (error) and 2 (failed tasks) are still fatal.
-  [ $rc -eq 0 ] || [ $rc -eq 3 ] || exit $rc
+  # Ansible exit codes are bit flags: 2=failed tasks, 4=unreachable hosts.
+  # Allow rc=0 (ok) or rc=4 (unreachable only); fail on rc=2 (failed tasks).
+  [ $(( rc & 2 )) -eq 0 ] || exit $rc
 else
   ansible-playbook $ANSIBLE_OPTS ./ansible/playbook_image_service.yml
 fi
