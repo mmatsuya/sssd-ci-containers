@@ -188,7 +188,7 @@ if [ "$SKIP_SAMBA" == "true" ]; then
 else
   ansible-playbook $ANSIBLE_OPTS ./ansible/playbook_image_service.yml
 fi
-compose stop
+compose stop || :
 build_service_image sssd-wip-client client
 build_service_image sssd-wip-ipa ipa
 build_service_image sssd-wip-ipa2 ipa2
