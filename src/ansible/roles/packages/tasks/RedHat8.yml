@@ -7,7 +7,7 @@
     state: present
     name: 'https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm'
     disable_gpg_check: yes
-  when: extended_packageset
+  when: extended_packageset or 'client_devel' in group_names or 'ipa_devel' in group_names
 
 - name: 'Packages are the same as in Fedora'
   include_tasks: 'Fedora.yml'
