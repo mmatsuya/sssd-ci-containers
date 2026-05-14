@@ -93,6 +93,30 @@ enabled=1
 gpgcheck=0
 sslverify=0
 priority=1
+
+[rhel84-baseos-source]
+name=RHEL 8.4 BaseOS Source
+baseurl=${RHEL84_COMPOSE}/BaseOS/source/tree/
+enabled=1
+gpgcheck=0
+sslverify=0
+priority=1
+
+[rhel84-appstream-source]
+name=RHEL 8.4 AppStream Source
+baseurl=${RHEL84_COMPOSE}/AppStream/source/tree/
+enabled=1
+gpgcheck=0
+sslverify=0
+priority=1
+
+[rhel84-crb-source]
+name=RHEL 8.4 CRB Source
+baseurl=${RHEL84_COMPOSE}/CRB/source/tree/
+enabled=1
+gpgcheck=0
+sslverify=0
+priority=1
 EOF"
 }
 
