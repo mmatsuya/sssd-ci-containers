@@ -313,6 +313,7 @@
   block:
   - name: Install SSSD build dependencies
     command: dnf builddep -y sssd
+    ignore_errors: yes
 
   - name: Install packages required for integration tests
     dnf:
